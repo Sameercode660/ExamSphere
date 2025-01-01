@@ -1,0 +1,44 @@
+# Node.js
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Next.js
+.next/
+out/
+public/
+
+# Logs
+logs/
+*.log
+*.log.*
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Frontend (HTML/CSS/JS)
+/dist/
+*.min.js
+*.min.css
+
+# IDE settings
+.idea/
+.vscode/
+
+# Build artifacts
+build/
+
+# Backup files
+*.bak
+*.swp
