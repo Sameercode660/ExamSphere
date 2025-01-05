@@ -1,14 +1,127 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "postgresql" // or your preferred database provider
   url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String       @id @default(uuid())
+  name        String
+  email       String       @unique
+  password    String
+  otp         String?
+  role        Role         @default(USER)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  exams       Exam[]       @relation("ExamCreator")
+  submissions Submission[]
+  enrollments Enrollment[]
+}
+
+enum Role {
+  ADMIN
+  TEACHER
+  STUDENT
+  USER
+}
+
+model Exam {
+  id          String       @id @default(uuid())
+  title       String
+  description String?
+  creatorId   String
+  creator     User         @relation("ExamCreator", fields: [creatorId], references: [id])
+  questions   Question[]
+  submissions Submission[]
+  startTime   DateTime
+  endTime     DateTime
+  enrollments Enrollment[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  Category    Category?    @relation(fields: [categoryId], references: [id])
+  categoryId  String?
+  Result      Result[]
+}
+
+model Question {
+  id        String       @id @default(uuid())
+  text      String
+  type      QuestionType
+  options   String[]     @default([]) // For MCQs, store options as an array
+  answer    String // Correct answer (could be a string or option key)
+  examId    String
+  exam      Exam         @relation(fields: [examId], references: [id])
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  Answer    Answer[]
+}
+
+enum QuestionType {
+  MCQ
+  SHORT_ANSWER
+  LONG_ANSWER
+}
+
+model Enrollment {
+  id         String   @id @default(uuid())
+  userId     String
+  examId     String
+  seatNumber String   @unique
+  schedule   DateTime
+  admitCard  String
+  user       User     @relation(fields: [userId], references: [id])
+  exam       Exam     @relation(fields: [examId], references: [id])
+}
+
+model Submission {
+  id        String           @id @default(uuid())
+  examId    String
+  exam      Exam             @relation(fields: [examId], references: [id])
+  userId    String
+  user      User             @relation(fields: [userId], references: [id])
+  answers   Answer[]
+  score     Float?
+  status    SubmissionStatus @default(PENDING)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  Result    Result[]
+}
+
+model Answer {
+  id           String     @id @default(uuid())
+  questionId   String
+  question     Question   @relation(fields: [questionId], references: [id])
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id])
+  response     String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+enum SubmissionStatus {
+  PENDING
+  SUBMITTED
+  GRADED
+}
+
+model Result {
+  id           String      @id @default(uuid())
+  seatNumber   String      @unique
+  examId       String
+  score        Float
+  status       String
+  exam         Exam        @relation(fields: [examId], references: [id])
+  Submission   Submission? @relation(fields: [submissionId], references: [id])
+  submissionId String?
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  exams     Exam[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
